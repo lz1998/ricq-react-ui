@@ -58,3 +58,24 @@ export const getProtocolName = (protocol: number): string => {
       return "IPad"
   }
 }
+
+export const getNetworkStatus = (status: number): string => {
+  switch (status) {
+    case 0:
+      return "unknown"
+    case 1:
+      return "运行中"
+    case 2:
+      return "已停止"
+    case 3:
+      return "已释放"
+    case 4:
+      return "网络错误"
+    case 5:
+      return "其他客户端踢下线"
+    case 6:
+      return "服务端强制下线"
+    default:
+      return status.toString()
+  }
+}
