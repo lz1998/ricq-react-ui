@@ -1,7 +1,13 @@
 import {Avatar, Button, Card, Form, Grid, Input, Modal, Select, Space, Tabs} from "@arco-design/web-react";
 import {IconDelete, IconLock} from "@arco-design/web-react/icon";
 import React, {useEffect} from "react";
-import {PasswordClient, passwordCreate, PasswordCreateRequest, passwordListClient} from "../api/password";
+import {
+  PasswordClient,
+  passwordCreate,
+  PasswordCreateRequest,
+  passwordDeleteClient,
+  passwordListClient
+} from "../api/password";
 import {getAvatarUrl, getPasswordLoginState, getProtocolName} from "../api/utils";
 
 const Row = Grid.Row;
@@ -24,6 +30,10 @@ function CreateBot() {
     // TODO message box
     console.log(resp)
     setShowCreateDialog(false)
+  }
+  const onPasswordDeleteClick = async (uin: number, protocol: number) => {
+    let resp = await passwordDeleteClient({uin, protocol})
+    console.log(resp)
   }
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -189,7 +199,8 @@ function CreateBot() {
                     <Space>
                       <Button type="outline" status="warning" icon={<IconLock/>} shape="round"
                               onClick={() => setShowProcessDialog(true)}/>
-                      <Button type="outline" status="danger" icon={<IconDelete/>} shape="round"/>
+                      <Button type="outline" status="danger" icon={<IconDelete/>} shape="round"
+                              onClick={async () => onPasswordDeleteClick(client.uin, client.protocol)}/>
                     </Space>
                   </div>
                 </Card>
