@@ -1,12 +1,13 @@
 import {Avatar, Button, Card, Form, Grid, Input, Modal, Select, Space, Tabs, Message} from "@arco-design/web-react";
 import {IconDelete, IconLock} from "@arco-design/web-react/icon";
+import {QRCodeCanvas} from 'qrcode.react';
 import React, {useEffect} from "react";
 import {
   PasswordClient,
   passwordCreate,
   PasswordCreateRequest,
   passwordDeleteClient,
-  passwordListClient
+  passwordListClient, passwordSubmitTicket
 } from "../api/password";
 import {getAvatarUrl, getPasswordLoginState, getProtocolName} from "../api/utils";
 
@@ -17,6 +18,7 @@ const Col = Grid.Col;
 function CreateBot() {
   const [showCreateDialog, setShowCreateDialog] = React.useState(false);
   const [showProcessDialog, setShowProcessDialog] = React.useState(false);
+  const [processingTicket, setProcessingTicket] = React.useState("");
   const [passwordForm, setPasswordForm] = React.useState<PasswordCreateRequest>({
     device_seed: 0,
     password: "",
@@ -47,6 +49,15 @@ function CreateBot() {
   const onPasswordDeleteClick = async (uin: number, protocol: number) => {
     await passwordDeleteClient({uin, protocol})
     Message.success("删除成功")
+  }
+  // 密码登录 - 提交ticket
+  const onSubmitTicketClick = async () => {
+    await passwordSubmitTicket({
+      uin: processingClient.uin,
+      protocol: processingClient.protocol,
+      ticket: processingTicket
+    })
+    Message.success("提交成功")
   }
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -154,21 +165,24 @@ function CreateBot() {
         footer={null}
       >
         <div style={{margin: "8px"}}>
-          根据类型确定展示什么
+          状态：{getPasswordLoginState(processingClient.resp)}
         </div>
-        <div style={{margin: "8px"}}>
-          滑块验证码：URL生成二维码，提示用 助手 处理。
-          输入 ticket 继续。
-        </div>
-        <div style={{margin: "8px"}}>
-          设备锁URL：URL生成二维码，提示用 助手 处理。
-          展示获取短信按钮，点击后转为短信验证码。
-          点击"已完成处理"后，提示删除重新创建。
-        </div>
-        <div style={{margin: "8px"}}>
-          设备锁短信：URL生成二维码，提示用 助手 处理。展示获取短信按钮，点击后转为短信验证码。
-          输入 短信验证码 继续。
-        </div>
+        {processingClient.resp.captcha_url && <>
+          <div>使用 <a href="https://github.com/mzdluo123/TxCaptchaHelper/releases" target="_blank">滑块助手</a> 扫码处理</div>
+          <QRCodeCanvas value={processingClient.resp.captcha_url}/>,
+          <Input
+            placeholder='please enter your ticket...'
+            onChange={(v) => setProcessingTicket(v)}
+          />
+          <Button type="primary" onClick={onSubmitTicketClick}>提交 Ticket</Button>
+        </>}
+        {processingClient.resp.verify_url && <>
+          <div>使用 <a href="https://github.com/mzdluo123/TxCaptchaHelper/releases"
+                     target="_blank">滑块助手</a> 扫码处理，完成后删除重新登录。
+          </div>
+          <QRCodeCanvas value={processingClient.resp.verify_url}/>,
+        </>}
+        {/*TODO 短信*/}
       </Modal>
 
       {/*登录中的列表*/}
@@ -198,12 +212,14 @@ function CreateBot() {
                                 style={{
                                   marginRight: 16,
                                   backgroundColor: '#165DFF',
+                                  flexShrink: 0
                                 }}
                                 size={72}
                               >
                                 <img alt="avatar" src={getAvatarUrl(client.uin)}/>
                               </Avatar>
-                              <Space direction="vertical" size="mini" style={{maxHeight: "72px", overflow: "hidden"}}>
+                              <Space direction="vertical" size="mini"
+                                     style={{maxHeight: "72px", overflow: "hidden", alignItems: "flex-start"}}>
                                 <div>账号：{client.uin}</div>
                                 <div>协议：{getProtocolName(client.protocol)}</div>
                                 <div>状态：{getPasswordLoginState(client.resp)}</div>
