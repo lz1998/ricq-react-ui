@@ -15,6 +15,7 @@ function RunningBot() {
     if (bots.length < resp.bots.length) {
       Message.info("账号登录成功，切换到【正在运行】页面查看")
     }
+    resp.bots.sort((a, b) => a.uin - b.uin || a.protocol - b.protocol);
     setBots(resp.bots)
   }, 3000);
 
