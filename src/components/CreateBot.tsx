@@ -1,4 +1,4 @@
-import {Avatar, Button, Card, Form, Grid, Input, Modal, Select, Space, Tabs} from "@arco-design/web-react";
+import {Avatar, Button, Card, Form, Grid, Input, Modal, Select, Space, Tabs, Message} from "@arco-design/web-react";
 import {IconDelete, IconLock} from "@arco-design/web-react/icon";
 import React, {useEffect} from "react";
 import {
@@ -24,16 +24,29 @@ function CreateBot() {
     uin: 0
   });
   const [passwordClients, setPasswordClients] = React.useState<Array<PasswordClient>>([]);
+  const [processingClient, setProcessingClient] = React.useState<PasswordClient>({
+    protocol: 0,
+    resp: {
+      state: ""
+    },
+    uin: 0
+  });
 
+  // 密码登录 - 创建客户端
   const onPasswordLoginClick = async () => {
-    let resp = await passwordCreate(passwordForm)
-    // TODO message box
-    console.log(resp)
+    await passwordCreate(passwordForm)
+    Message.success("创建成功")
     setShowCreateDialog(false)
   }
+  // 密码登录 - 处理验证码、设备锁
+  const onPasswordProcessClick = async (client: PasswordClient) => {
+    setProcessingClient(client) // 设置正在处理的client
+    setShowProcessDialog(true)
+  }
+  // 密码登录 - 删除客户端
   const onPasswordDeleteClick = async (uin: number, protocol: number) => {
-    let resp = await passwordDeleteClient({uin, protocol})
-    console.log(resp)
+    await passwordDeleteClient({uin, protocol})
+    Message.success("删除成功")
   }
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -198,7 +211,7 @@ function CreateBot() {
                             </span>
                     <Space>
                       <Button type="outline" status="warning" icon={<IconLock/>} shape="round"
-                              onClick={() => setShowProcessDialog(true)}/>
+                              onClick={() => onPasswordProcessClick(client)}/>
                       <Button type="outline" status="danger" icon={<IconDelete/>} shape="round"
                               onClick={async () => onPasswordDeleteClick(client.uin, client.protocol)}/>
                     </Space>
