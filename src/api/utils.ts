@@ -23,6 +23,25 @@ export const getPasswordLoginState = (resp: LoginResponse): string => {
   }
 }
 
+export const getQRCodeState = (state: string): string => {
+  switch (state) {
+    case "image_fetch":
+      return "成功获取二维码"
+    case "waiting_for_scan":
+      return "待扫码"
+    case "waiting_for_confirm":
+      return "待确认"
+    case "timeout":
+      return "超时"
+    case "confirmed":
+      return "已确认"
+    case "canceled":
+      return "已取消"
+    default:
+      return state
+  }
+}
+
 export const getProtocolName = (protocol: number): string => {
   switch (protocol) {
     case 1:

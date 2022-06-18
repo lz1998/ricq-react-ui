@@ -9,7 +9,15 @@ import {
   passwordDeleteClient,
   passwordListClient, passwordRequestSms, passwordSubmitSms, passwordSubmitTicket
 } from "../api/password";
-import {getAvatarUrl, getPasswordLoginState, getProtocolName} from "../api/utils";
+import {getAvatarUrl, getPasswordLoginState, getProtocolName, getQRCodeState} from "../api/utils";
+import {
+  QRCodeClient,
+  qrcodeCreate,
+  QRCodeCreateRequest,
+  qrcodeDelete,
+  qrcodeListClient,
+  qrcodeQuery
+} from "../api/qrcode";
 
 const Row = Grid.Row;
 const Col = Grid.Col;
@@ -26,7 +34,12 @@ function CreateBot() {
     protocol: 0,
     uin: 0
   });
+  const [qrcodeForm, setQRCodeForm] = React.useState<QRCodeCreateRequest>({
+    device_seed: 0,
+    protocol: 0,
+  });
   const [passwordClients, setPasswordClients] = React.useState<Array<PasswordClient>>([]);
+  const [qrcodeClients, setQRCodeClients] = React.useState<Array<QRCodeClient>>([]); // TODO
   const [processingClient, setProcessingClient] = React.useState<PasswordClient>({
     protocol: 0,
     resp: {
@@ -37,8 +50,7 @@ function CreateBot() {
 
   // 密码登录 - 创建客户端
   const onPasswordLoginClick = async () => {
-    let resp = await passwordCreate(passwordForm)
-    console.log(resp)
+    await passwordCreate(passwordForm)
     Message.success("创建成功")
     setShowCreateDialog(false)
   }
@@ -85,14 +97,39 @@ function CreateBot() {
       Message.info("登录成功")
     }
   }
+
+  // 扫码登录 - 创建客户端
+  const onQRCodeLoginClick = async () => {
+    await qrcodeCreate(qrcodeForm)
+    Message.success("创建成功")
+    setShowCreateDialog(false)
+  }
+  // 扫码登录 - 删除客户端
+  const onQRCodeDeleteClick = async (sig: string) => {
+    await qrcodeDelete({sig})
+    Message.success("删除成功")
+  }
   useEffect(() => {
     const interval = setInterval(async () => {
-      let resp = await passwordListClient()
-      let clients = resp.clients
-      clients.sort((a, b) => a.uin - b.uin || a.protocol - b.protocol);
-      // console.log(clients)
-      setPasswordClients(clients)
-    }, 1000);
+      // 刷新密码登录列表
+      let resp1 = await passwordListClient()
+      resp1.clients.sort((a, b) => a.uin - b.uin || a.protocol - b.protocol);
+      setPasswordClients(resp1.clients)
+
+      // 刷新所有扫码状态
+      for (let cli of qrcodeClients) {
+        try {
+          await qrcodeQuery({sig: cli.sig})
+        } catch (e) {
+          // console.log(e)
+        }
+      }
+
+      // 刷新扫码登录列表
+      let resp2 = await qrcodeListClient()
+      resp2.clients.sort((a, b) => a.sig.localeCompare(b.sig));
+      setQRCodeClients(resp2.clients)
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -164,17 +201,29 @@ function CreateBot() {
           <Tabs.TabPane key='qrcode' title='QRCode'>
             <Form style={{width: "100%"}}>
               <Form.Item label='Seed'>
-                <Input placeholder='please enter your seed...' type="number"/>
+                <Input
+                  placeholder='please enter your seed...'
+                  type="number"
+                  onChange={(v) => setQRCodeForm({
+                    ...passwordForm,
+                    device_seed: parseInt(v)
+                  })}/>
               </Form.Item>
               <Form.Item label='Protocol'>
-                <Select>
-                  <Select.Option key="ipad" value="ipad">ipad</Select.Option>
-                  <Select.Option key="phone" value="phone">phone</Select.Option>
-                  <Select.Option key="watch" value="watch">watch</Select.Option>
+                <Select onChange={(v) => {
+                  setQRCodeForm({
+                    ...passwordForm,
+                    protocol: v,
+                  })
+                }}>
+                  <Select.Option key="phone" value={1}>Phone</Select.Option>
+                  <Select.Option key="watch" value={2}>Watch</Select.Option>
+                  <Select.Option key="mac" value={3}>MacOS</Select.Option>
+                  <Select.Option key="ipad" value={5}>IPad</Select.Option>
                 </Select>
               </Form.Item>
               <Form.Item wrapperCol={{offset: 5}}>
-                <Button type='primary'>Login</Button>
+                <Button type='primary' onClick={onQRCodeLoginClick}>Login</Button>
               </Form.Item>
             </Form>
           </Tabs.TabPane>
@@ -195,7 +244,9 @@ function CreateBot() {
           状态：{getPasswordLoginState(processingClient.resp)}
         </div>
         {processingClient.resp.captcha_url && <>
-          <div>使用 <a href="https://github.com/mzdluo123/TxCaptchaHelper/releases" target="_blank" rel="noreferrer">滑块助手</a> 扫码处理</div>
+          <div>使用 <a href="https://github.com/mzdluo123/TxCaptchaHelper/releases" target="_blank"
+                     rel="noreferrer">滑块助手</a> 扫码处理
+          </div>
           <QRCodeCanvas value={processingClient.resp.captcha_url}/>,
           <Input
             placeholder='please enter your ticket...'
@@ -275,10 +326,10 @@ function CreateBot() {
               </Col>
             )
           })}
-        {Array.from(new Array(5).keys())
-          .map((k) => {
+        {qrcodeClients
+          .map((client) => {
             return (
-              <Col xs={24} sm={12} lg={8} xl={6} key={k}>
+              <Col xs={24} sm={12} lg={8} xl={6} key={client.sig}>
                 <Card
                   hoverable
                 >
@@ -305,13 +356,14 @@ function CreateBot() {
                                 shape="square"
                               >
                                 <img alt="avatar"
-                                     src="https://content.volccdn.com/obj/volc-content/lab/mt-portal/mt-portal-fe/static/media/wechat_code.2bf36af6.png"/>
+                                     src={`data:image/png;base64, ${client.image}`}/>
                               </Avatar>
                               <div>
-                              <div>状态：待扫码</div>
+                              <div>状态：{getQRCodeState(client.state)}</div>
                               </div>
                             </span>
-                    <Button type="outline" status="danger" icon={<IconDelete/>} shape="round"/>
+                    <Button type="outline" status="danger" icon={<IconDelete/>} shape="round"
+                            onClick={async () => onQRCodeDeleteClick(client.sig)}/>
                   </div>
                 </Card>
               </Col>
