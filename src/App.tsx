@@ -1,13 +1,31 @@
 import React from 'react';
 import './App.css';
-import {Layout, Tabs} from "@arco-design/web-react";
+import {Layout, Message, Tabs} from "@arco-design/web-react";
 import "@arco-design/web-react/dist/css/arco.css";
 import PluginConfig from "./components/PluginConfig";
 import RunningBot from "./components/RunningBot";
 import CreateBot from "./components/CreateBot";
+import {Bot, listBot} from "./api/bot";
+import {useInterval} from "@arco-design/web-react/es/_util/hooks/useInterval";
+import {getProtocolName} from "./api/utils";
 
 
 function App() {
+  const [bots, setBots] = React.useState<Array<Bot>>([]);
+  useInterval(async () => {
+    let resp = await listBot();
+    let originBots = new Set(bots.map(b => `${b.uin}(${getProtocolName(b.protocol)})`));
+    let newBots = resp.bots.map(b => `${b.uin}(${getProtocolName(b.protocol)})`);
+    let diff = newBots.filter(b => !originBots.has(b));
+    for (let bot of diff) {
+      Message.info(`${bot} 登录成功，切换到【正在运行】页面查看`)
+    }
+    // if (bots.length < resp.bots.length) {
+    // }
+    resp.bots.sort((a, b) => a.uin - b.uin || a.protocol - b.protocol);
+    setBots(resp.bots)
+  }, 1000);
+
   return (
     <div className="App">
       <Layout className="layout">
@@ -22,7 +40,7 @@ function App() {
               <PluginConfig/>
             </Tabs.TabPane>
             <Tabs.TabPane key='running-bot' title='正在运行'>
-              <RunningBot/>
+              <RunningBot bots={bots}/>
             </Tabs.TabPane>
             <Tabs.TabPane key='create-bot' title='创建账号'>
               <CreateBot/>
