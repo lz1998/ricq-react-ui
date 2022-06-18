@@ -1,7 +1,8 @@
 import {Avatar, Button, Card, Form, Grid, Input, Modal, Select, Space, Tabs} from "@arco-design/web-react";
 import {IconDelete, IconLock} from "@arco-design/web-react/icon";
-import React from "react";
-import {passwordCreate, PasswordCreateRequest} from "../api/password";
+import React, {useEffect} from "react";
+import {PasswordClient, passwordCreate, PasswordCreateRequest, passwordListClient} from "../api/password";
+import {getAvatarUrl, getPasswordLoginState, getProtocolName} from "../api/utils";
 
 const Row = Grid.Row;
 const Col = Grid.Col;
@@ -16,6 +17,7 @@ function CreateBot() {
     protocol: 0,
     uin: 0
   });
+  const [passwordClients, setPasswordClients] = React.useState<Array<PasswordClient>>([]);
 
   const onPasswordLoginClick = async () => {
     let resp = await passwordCreate(passwordForm)
@@ -23,6 +25,16 @@ function CreateBot() {
     console.log(resp)
     setShowCreateDialog(false)
   }
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      let resp = await passwordListClient()
+      let clients = resp.clients
+      clients.sort((a, b) => a.uin - b.uin || a.protocol - b.protocol);
+      // console.log(clients)
+      setPasswordClients(clients)
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div style={{textAlign: "center"}}>
@@ -138,10 +150,10 @@ function CreateBot() {
 
       {/*登录中的列表*/}
       <Row gutter={[24, 16]} style={{padding: "16px"}}>
-        {Array.from(new Array(5).keys())
-          .map((k) => {
+        {passwordClients
+          .map((client) => {
             return (
-              <Col xs={24} sm={12} lg={8} xl={6} key={k}>
+              <Col xs={24} sm={12} lg={8} xl={6} key={client.uin}>
                 <Card
                   hoverable
                 >
@@ -166,12 +178,12 @@ function CreateBot() {
                                 }}
                                 size={72}
                               >
-                                <img alt="avatar" src="https://p.qlogo.cn/gh/982166018/982166018/0"/>
+                                <img alt="avatar" src={getAvatarUrl(client.uin)}/>
                               </Avatar>
-                              <Space direction="vertical" size="mini">
-                                <div>账号：875543533</div>
-                                <div>状态：滑块验证码</div>
-                                <div>协议：手机</div>
+                              <Space direction="vertical" size="mini" style={{maxHeight: "72px", overflow: "hidden"}}>
+                                <div>账号：{client.uin}</div>
+                                <div>协议：{getProtocolName(client.protocol)}</div>
+                                <div>状态：{getPasswordLoginState(client.resp)}</div>
                               </Space>
                             </span>
                     <Space>

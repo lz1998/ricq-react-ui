@@ -1,4 +1,4 @@
-import {post} from "./index";
+import {get, post} from "./index";
 
 // 密码创建
 export interface PasswordCreateRequest {
@@ -11,17 +11,20 @@ export interface PasswordCreateRequest {
 // 提交滑块ticket
 export interface SubmitTicketRequest {
   uin: number;
+  protocol: number;
   ticket: string;
 }
 
 // 请求短信验证码
 export interface RequestSmsRequest {
   uin: number;
+  protocol: number;
 }
 
 // 提交短信验证码
 export interface SubmitSmsRequest {
   uin: number;
+  protocol: number;
   sms: string;
 }
 
@@ -29,6 +32,7 @@ export interface SubmitSmsRequest {
 // 删除客户端
 export interface PasswordDeleteClientRequest {
   uin: number;
+  protocol: number;
 }
 
 // 密码登录响应
@@ -38,6 +42,16 @@ export interface LoginResponse {
   verify_url?: string;
   sms_phone?: string;
   message?: string;
+}
+
+export interface PasswordListClientResponse {
+  clients: PasswordClient[];
+}
+
+export interface PasswordClient {
+  uin: number;
+  protocol: number;
+  resp: LoginResponse;
 }
 
 export interface BaseResponse {
@@ -61,4 +75,8 @@ export const passwordSubmitSms = async (req: SubmitSmsRequest): Promise<LoginRes
 
 export const passwordDeleteClient = async (req: PasswordDeleteClientRequest): Promise<BaseResponse> => {
   return await post("/login/password/delete", req)
+}
+
+export const passwordListClient = async (): Promise<PasswordListClientResponse> => {
+  return await get("/login/password/list")
 }
