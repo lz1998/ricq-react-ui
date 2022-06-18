@@ -7,7 +7,7 @@ import {
   passwordCreate,
   PasswordCreateRequest,
   passwordDeleteClient,
-  passwordListClient, passwordSubmitTicket
+  passwordListClient, passwordRequestSms, passwordSubmitSms, passwordSubmitTicket
 } from "../api/password";
 import {getAvatarUrl, getPasswordLoginState, getProtocolName} from "../api/utils";
 
@@ -19,6 +19,7 @@ function CreateBot() {
   const [showCreateDialog, setShowCreateDialog] = React.useState(false);
   const [showProcessDialog, setShowProcessDialog] = React.useState(false);
   const [processingTicket, setProcessingTicket] = React.useState("");
+  const [processingSms, setProcessingSms] = React.useState("");
   const [passwordForm, setPasswordForm] = React.useState<PasswordCreateRequest>({
     device_seed: 0,
     password: "",
@@ -36,7 +37,8 @@ function CreateBot() {
 
   // 密码登录 - 创建客户端
   const onPasswordLoginClick = async () => {
-    await passwordCreate(passwordForm)
+    let resp = await passwordCreate(passwordForm)
+    console.log(resp)
     Message.success("创建成功")
     setShowCreateDialog(false)
   }
@@ -59,6 +61,30 @@ function CreateBot() {
     })
     Message.success("提交成功")
   }
+  // 密码登录 - 请求短信验证码
+  const onRequestSmsClick = async () => {
+    let resp = await passwordRequestSms({
+      uin: processingClient.uin,
+      protocol: processingClient.protocol,
+    })
+    if (resp.state === "too_many_sms_request") {
+      Message.error("请求过于频繁，请删除后重新登录")
+    } else {
+      Message.info("已请求短信验证码")
+    }
+  }
+  // 密码登录 - 提交短信验证码
+  const onSubmitSmsClick = async () => {
+    let resp = await passwordSubmitSms({
+      uin: processingClient.uin,
+      protocol: processingClient.protocol,
+      sms: processingSms
+    })
+    Message.success("提交成功")
+    if (resp.state === "success") {
+      Message.info("登录成功")
+    }
+  }
   useEffect(() => {
     const interval = setInterval(async () => {
       let resp = await passwordListClient()
@@ -71,9 +97,10 @@ function CreateBot() {
   }, []);
 
   return (
-    <div style={{textAlign: "center"}}>
-      <Button onClick={() => console.log(passwordForm)}>test</Button>
-      <Button type="primary" style={{margin: "4px"}} onClick={() => setShowCreateDialog(true)}>创建账号</Button>
+    <div>
+      <div style={{width: "100%", textAlign: "center"}}>
+        <Button type="primary" style={{margin: "4px"}} onClick={() => setShowCreateDialog(true)}>创建账号</Button>
+      </div>
       {/*创建弹框*/}
       <Modal
         style={{maxWidth: "96vw"}}
@@ -168,7 +195,7 @@ function CreateBot() {
           状态：{getPasswordLoginState(processingClient.resp)}
         </div>
         {processingClient.resp.captcha_url && <>
-          <div>使用 <a href="https://github.com/mzdluo123/TxCaptchaHelper/releases" target="_blank">滑块助手</a> 扫码处理</div>
+          <div>使用 <a href="https://github.com/mzdluo123/TxCaptchaHelper/releases" target="_blank" rel="noreferrer">滑块助手</a> 扫码处理</div>
           <QRCodeCanvas value={processingClient.resp.captcha_url}/>,
           <Input
             placeholder='please enter your ticket...'
@@ -177,12 +204,24 @@ function CreateBot() {
           <Button type="primary" onClick={onSubmitTicketClick}>提交 Ticket</Button>
         </>}
         {processingClient.resp.verify_url && <>
+          <h2>设备锁-扫码验证</h2>
           <div>使用 <a href="https://github.com/mzdluo123/TxCaptchaHelper/releases"
-                     target="_blank">滑块助手</a> 扫码处理，完成后删除重新登录。
+                     target="_blank" rel="noreferrer">滑块助手</a> 扫码处理，完成后删除客户端，重新登录。
           </div>
           <QRCodeCanvas value={processingClient.resp.verify_url}/>,
+
         </>}
-        {/*TODO 短信*/}
+        {
+          (processingClient.resp.state === "device_locked" || processingClient.resp.state === "too_many_sms_request") && <>
+            <h2>设备锁-短信验证</h2>
+            <Button type="primary" onClick={onRequestSmsClick}>发送验证码</Button>
+            <Input
+              placeholder='please enter your sms...'
+              onChange={(v) => setProcessingSms(v)}
+            />
+            <Button type="primary" onClick={onSubmitSmsClick}>提交验证码</Button>
+          </>
+        }
       </Modal>
 
       {/*登录中的列表*/}
@@ -190,7 +229,7 @@ function CreateBot() {
         {passwordClients
           .map((client) => {
             return (
-              <Col xs={24} sm={12} lg={8} xl={6} key={client.uin}>
+              <Col xs={24} sm={12} lg={8} xl={6} key={client.uin + "|" + client.protocol}>
                 <Card
                   hoverable
                 >
