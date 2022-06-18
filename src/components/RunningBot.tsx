@@ -1,24 +1,23 @@
 import {Avatar, Button, Card, Grid, Message, Space} from "@arco-design/web-react";
 import {IconDelete} from "@arco-design/web-react/icon";
-import React, {useEffect} from "react";
+import React from "react";
 import {Bot, deleteBot, listBot} from "../api/bot";
 import {getAvatarUrl, getNetworkStatus, getProtocolName} from "../api/utils";
+import {useInterval} from "@arco-design/web-react/es/_util/hooks/useInterval";
 
 const Row = Grid.Row;
 const Col = Grid.Col;
 
 function RunningBot() {
   const [bots, setBots] = React.useState<Array<Bot>>([]);
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      let resp = await listBot();
-      if (bots.length < resp.bots.length) {
-        Message.info("账号登录成功，切换到【正在运行】页面查看")
-      }
-      setBots(resp.bots)
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  useInterval(async () => {
+    let resp = await listBot();
+    if (bots.length < resp.bots.length) {
+      Message.info("账号登录成功，切换到【正在运行】页面查看")
+    }
+    setBots(resp.bots)
+  }, 3000);
+
 
   const onDeleteBotClick = async (uin: number, protocol: number) => {
     await deleteBot({

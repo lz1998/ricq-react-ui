@@ -1,7 +1,7 @@
 import {Avatar, Button, Card, Form, Grid, Input, Modal, Select, Space, Tabs, Message} from "@arco-design/web-react";
 import {IconDelete, IconLock} from "@arco-design/web-react/icon";
 import {QRCodeCanvas} from 'qrcode.react';
-import React, {useEffect} from "react";
+import React from "react";
 import {
   PasswordClient,
   passwordCreate,
@@ -18,6 +18,7 @@ import {
   qrcodeListClient,
   qrcodeQuery
 } from "../api/qrcode";
+import {useInterval} from "@arco-design/web-react/lib/_util/hooks/useInterval";
 
 const Row = Grid.Row;
 const Col = Grid.Col;
@@ -109,29 +110,25 @@ function CreateBot() {
     await qrcodeDelete({sig})
     Message.success("删除成功")
   }
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      // 刷新密码登录列表
-      let resp1 = await passwordListClient()
-      resp1.clients.sort((a, b) => a.uin - b.uin || a.protocol - b.protocol);
-      setPasswordClients(resp1.clients)
+  useInterval(async () => {
+    let resp1 = await passwordListClient()
+    resp1.clients.sort((a, b) => a.uin - b.uin || a.protocol - b.protocol);
+    setPasswordClients(resp1.clients)
 
-      // 刷新所有扫码状态
-      for (let cli of qrcodeClients) {
-        try {
-          await qrcodeQuery({sig: cli.sig})
-        } catch (e) {
-          // console.log(e)
-        }
+    // 刷新所有扫码状态
+    for (let cli of qrcodeClients) {
+      try {
+        await qrcodeQuery({sig: cli.sig})
+      } catch (e) {
+        // console.log(e)
       }
+    }
 
-      // 刷新扫码登录列表
-      let resp2 = await qrcodeListClient()
-      resp2.clients.sort((a, b) => a.sig.localeCompare(b.sig));
-      setQRCodeClients(resp2.clients)
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    // 刷新扫码登录列表
+    let resp2 = await qrcodeListClient()
+    resp2.clients.sort((a, b) => a.sig.localeCompare(b.sig));
+    setQRCodeClients(resp2.clients)
+  }, 3000);
 
   return (
     <div>
@@ -181,12 +178,14 @@ function CreateBot() {
                 />
               </Form.Item>
               <Form.Item label='Protocol'>
-                <Select onChange={(v) => {
-                  setPasswordForm({
-                    ...passwordForm,
-                    protocol: v,
-                  })
-                }}>
+                <Select
+                  defaultValue={5}
+                  onChange={(v) => {
+                    setPasswordForm({
+                      ...passwordForm,
+                      protocol: v,
+                    })
+                  }}>
                   <Select.Option key="phone" value={1}>Phone</Select.Option>
                   <Select.Option key="watch" value={2}>Watch</Select.Option>
                   <Select.Option key="mac" value={3}>MacOS</Select.Option>
