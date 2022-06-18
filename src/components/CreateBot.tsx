@@ -294,7 +294,6 @@ function CreateBot() {
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                color: '#1D2129',
                               }}
                             >
                               <Avatar
@@ -343,7 +342,6 @@ function CreateBot() {
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                color: '#1D2129',
                               }}
                             >
                               <Avatar

@@ -42,7 +42,6 @@ function RunningBot(props: RunningBotProp) {
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                color: '#1D2129',
                               }}
                             >
                               <Avatar

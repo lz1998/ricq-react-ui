@@ -47,7 +47,6 @@ function App() {
             </Tabs.TabPane>
           </Tabs>
         </Layout.Content>
-        <Layout.Footer>Footer</Layout.Footer>
       </Layout>
     </div>
   );
