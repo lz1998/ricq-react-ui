@@ -17,7 +17,7 @@ function App() {
           </div>
         </Layout.Header>
         <Layout.Content className="content">
-          <Tabs defaultActiveTab='plugin-config' className="tab-header">
+          <Tabs defaultActiveTab='create-bot' className="tab-header">
             <Tabs.TabPane key='plugin-config' title='插件配置'>
               <PluginConfig/>
             </Tabs.TabPane>
