@@ -1,13 +1,14 @@
 import React from 'react';
 import './App.css';
-import {Layout, Message, Tabs} from "@arco-design/web-react";
+import {Button, Layout, Message, Tabs} from "@arco-design/web-react";
 import "@arco-design/web-react/dist/css/arco.css";
-import PluginConfig from "./components/PluginConfig";
+// import PluginConfig from "./components/PluginConfig";
 import RunningBot from "./components/RunningBot";
 import CreateBot from "./components/CreateBot";
 import {Bot, listBot} from "./api/bot";
 import {useInterval} from "@arco-design/web-react/es/_util/hooks/useInterval";
 import {getProtocolName} from "./api/utils";
+import {IconGithub} from "@arco-design/web-react/icon";
 
 
 function App() {
@@ -33,12 +34,17 @@ function App() {
           <div className="logo">
             PB-RQ
           </div>
+          <div className="logo" style={{float: "right", marginRight: "24px"}}>
+            <a target="_blank" href="https://github.com/ProtobufBot/pbrq" rel="noreferrer">
+              <Button style={{background: "transparent"}} icon={<IconGithub style={{fontSize:"24px"}}/>}/>
+            </a>
+          </div>
         </Layout.Header>
         <Layout.Content className="content">
           <Tabs defaultActiveTab='create-bot' className="tab-header">
-            <Tabs.TabPane key='plugin-config' title='插件配置'>
-              <PluginConfig/>
-            </Tabs.TabPane>
+            {/*<Tabs.TabPane key='plugin-config' title='插件配置'>*/}
+            {/*  <PluginConfig/>*/}
+            {/*</Tabs.TabPane>*/}
             <Tabs.TabPane key='running-bot' title='正在运行'>
               <RunningBot bots={bots}/>
             </Tabs.TabPane>
