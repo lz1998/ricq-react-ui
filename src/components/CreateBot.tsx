@@ -186,10 +186,14 @@ function CreateBot() {
                       protocol: v,
                     })
                   }}>
-                  <Select.Option key="phone" value={1}>Phone</Select.Option>
-                  <Select.Option key="watch" value={2}>Watch</Select.Option>
-                  <Select.Option key="mac" value={3}>MacOS</Select.Option>
-                  <Select.Option key="ipad" value={5}>IPad</Select.Option>
+                  {
+                    [1, 2, 3, 5].map(protocol =>
+                      <Select.Option
+                        key={protocol}
+                        value={protocol}>
+                        {getProtocolName(protocol)}
+                      </Select.Option>)
+                  }
                 </Select>
               </Form.Item>
               <Form.Item wrapperCol={{offset: 5}}>
@@ -209,16 +213,22 @@ function CreateBot() {
                   })}/>
               </Form.Item>
               <Form.Item label='Protocol'>
-                <Select onChange={(v) => {
-                  setQRCodeForm({
-                    ...passwordForm,
-                    protocol: v,
-                  })
-                }}>
-                  <Select.Option key="phone" value={1}>Phone</Select.Option>
-                  <Select.Option key="watch" value={2}>Watch</Select.Option>
-                  <Select.Option key="mac" value={3}>MacOS</Select.Option>
-                  <Select.Option key="ipad" value={5}>IPad</Select.Option>
+                <Select
+                  defaultValue={2}
+                  onChange={(v) => {
+                    setQRCodeForm({
+                      ...passwordForm,
+                      protocol: v,
+                    })
+                  }}>
+                  {
+                    [2, 3].map(protocol =>
+                      <Select.Option
+                        key={protocol}
+                        value={protocol}>
+                        {getProtocolName(protocol)}
+                      </Select.Option>)
+                  }
                 </Select>
               </Form.Item>
               <Form.Item wrapperCol={{offset: 5}}>
