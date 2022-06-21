@@ -54,7 +54,7 @@ function RunningBot(props: RunningBotProp) {
                                 <img alt="avatar" src={getAvatarUrl(bot.uin)}/>
                               </Avatar>
                               <Space direction="vertical" size="mini">
-                                <div>账号：875543533</div>
+                                <div>账号：{bot.uin}</div>
                                 <div>状态：{getNetworkStatus(bot.status)}</div>
                                 <div>协议：{getProtocolName(bot.protocol)}</div>
                               </Space>
