@@ -32,7 +32,7 @@ function App() {
       <Layout className="layout">
         <Layout.Header className="header">
           <div className="logo">
-            PB-RQ
+            RICQ
           </div>
           <div className="logo" style={{float: "right", marginRight: "24px"}}>
             <a target="_blank" href="https://github.com/ProtobufBot/pbrq" rel="noreferrer">
