@@ -35,7 +35,7 @@ function App() {
             RICQ
           </div>
           <div className="logo" style={{float: "right", marginRight: "24px"}}>
-            <a target="_blank" href="https://github.com/ProtobufBot/pbrq" rel="noreferrer">
+            <a target="_blank" href="https://github.com/lz1998/ricq" rel="noreferrer">
               <Button style={{background: "transparent"}} icon={<IconGithub style={{fontSize:"24px"}}/>}/>
             </a>
           </div>
