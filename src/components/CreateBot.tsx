@@ -37,7 +37,7 @@ function CreateBot() {
   });
   const [qrcodeForm, setQRCodeForm] = React.useState<QRCodeCreateRequest>({
     device_seed: 0,
-    protocol: 0,
+    protocol: 2,
   });
   const [passwordClients, setPasswordClients] = React.useState<Array<PasswordClient>>([]);
   const [qrcodeClients, setQRCodeClients] = React.useState<Array<QRCodeClient>>([]); // TODO
