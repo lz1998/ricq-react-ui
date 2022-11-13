@@ -208,7 +208,7 @@ function CreateBot() {
                   placeholder='please enter your seed...'
                   type="number"
                   onChange={(v) => setQRCodeForm({
-                    ...passwordForm,
+                    ...qrcodeForm,
                     device_seed: parseInt(v)
                   })}/>
               </Form.Item>
@@ -217,7 +217,7 @@ function CreateBot() {
                   defaultValue={2}
                   onChange={(v) => {
                     setQRCodeForm({
-                      ...passwordForm,
+                      ...qrcodeForm,
                       protocol: v,
                     })
                   }}>
