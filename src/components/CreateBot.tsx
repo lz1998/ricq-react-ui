@@ -253,7 +253,7 @@ function CreateBot() {
           状态：{getPasswordLoginState(processingClient.resp)}
         </div>
         {processingClient.resp.captcha_url && <>
-          <div>使用 <a href="https://github.com/mzdluo123/TxCaptchaHelper/releases" target="_blank"
+          <div>使用 <a href="https://github.com/KasukuSakura/mirai-login-solver-sakura/releases" target="_blank"
                      rel="noreferrer">滑块助手</a> 扫码处理
           </div>
           <QRCodeCanvas value={processingClient.resp.captcha_url}/>,
@@ -265,7 +265,7 @@ function CreateBot() {
         </>}
         {processingClient.resp.verify_url && <>
           <h2>设备锁-扫码验证</h2>
-          <div>使用 <a href="https://github.com/mzdluo123/TxCaptchaHelper/releases"
+          <div>使用 <a href="https://github.com/KasukuSakura/mirai-login-solver-sakura/releases"
                      target="_blank" rel="noreferrer">滑块助手</a> 扫码处理，完成后删除客户端，重新登录。
           </div>
           <QRCodeCanvas value={processingClient.resp.verify_url}/>,
